@@ -7,6 +7,9 @@
 
 #include <string>
 
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 #include "logging/WriterBackend.h"
 #include "threading/formatters/JSON.h"
 #include "threading/formatters/Ascii.h"
@@ -38,12 +41,17 @@ protected:
 private:
     string GetConfigValue(const WriterInfo & info, const string name) const;
 
+    int sock;
+    SSL_CTX * ctx;
+    SSL * ssl;
+
     threading::formatter::JSON * formatter;
     ODesc buffer;
 
     string host;
     int tcpport;
     bool tls;
+    string cert;
 };
 
 }
