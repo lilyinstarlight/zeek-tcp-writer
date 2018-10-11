@@ -40,7 +40,7 @@ string TCP::GetConfigValue(const WriterInfo & info, const string name) const {
         return it->second;
 }
 
-bool TCP::DoLoad() {
+bool TCP::DoLoad(bool conn_err) {
     // error value
     int ret;
     long lret;
@@ -76,10 +76,13 @@ bool TCP::DoLoad() {
     if (ret < 0) {
         char addrstr[INET6_ADDRSTRLEN];
         inet_ntop(addr->ai_family, addr->ai_addr->sa_family == AF_INET ? &(((struct sockaddr_in *)addr->ai_addr)->sin_addr) : (struct in_addr *)&(((struct sockaddr_in6 *)addr->ai_addr)->sin6_addr), addrstr, sizeof(addrstr));
-        if (retry)
-            Warning(Fmt("Error connecting to %s: %s", addrstr, strerror(errno)));
-        else
+        if (retry) {
+            if (conn_err)
+                Warning(Fmt("Error connecting to %s: %s", addrstr, strerror(errno)));
+        }
+        else {
             Error(Fmt("Error connecting to %s: %s", addrstr, strerror(errno)));
+        }
 
         // clean up and return success if retrying
         freeaddrinfo(addr);
@@ -261,7 +264,7 @@ bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threa
 
     if (sock < 0) {
         if (retry) {
-            DoLoad();
+            DoLoad(false);
 
             if (sock < 0)
                 return true;
