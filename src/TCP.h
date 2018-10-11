@@ -39,6 +39,8 @@ protected:
     virtual bool DoHeartbeat(double network_time, double current_time);
 
 private:
+    bool DoLoad(bool initial = true);
+    bool DoUnload();
     string GetConfigValue(const WriterInfo & info, const string name) const;
 
     int sock;
@@ -50,6 +52,7 @@ private:
 
     string host;
     int tcpport;
+    bool retry;
     bool tls;
     string cert;
 };

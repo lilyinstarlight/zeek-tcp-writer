@@ -14,7 +14,7 @@
 using namespace logging;
 using namespace writer;
 
-TCP::TCP(WriterFrontend * frontend) : WriterBackend(frontend), host((const char *)BifConst::LogTCP::host->Bytes(), BifConst::LogTCP::host->Len()), tcpport(BifConst::LogTCP::tcpport), tls(BifConst::LogTCP::tls), cert((const char *)BifConst::LogTCP::cert->Bytes(), BifConst::LogTCP::cert->Len()) {
+TCP::TCP(WriterFrontend * frontend) : WriterBackend(frontend), host((const char *)BifConst::LogTCP::host->Bytes(), BifConst::LogTCP::host->Len()), tcpport(BifConst::LogTCP::tcpport), retry(BifConst::LogTCP::retry), tls(BifConst::LogTCP::tls), cert((const char *)BifConst::LogTCP::cert->Bytes(), BifConst::LogTCP::cert->Len()) {
     if (tls) {
         // add tls
         SSL_load_error_strings();
@@ -40,31 +40,10 @@ string TCP::GetConfigValue(const WriterInfo & info, const string name) const {
         return it->second;
 }
 
-bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field * const * fields) {
+bool TCP::DoLoad(bool initial) {
     // error value
     int ret;
     long lret;
-
-    // get configuration value
-    string cfg_host = GetConfigValue(info, "host");
-    string cfg_tcpport = GetConfigValue(info, "tcpport");
-    string cfg_tls = GetConfigValue(info, "tls");
-    string cfg_cert = GetConfigValue(info, "cert");
-
-    // fill in non-empty values
-    if (!cfg_host.empty())
-        host = cfg_host;
-    if (!cfg_tcpport.empty())
-        tcpport = stoi(cfg_tcpport);
-    if (!cfg_tls.empty())
-        tls = cfg_tls == "T";
-    if (!cfg_cert.empty())
-        cert = cfg_cert;
-
-    // prepare json formatter
-    formatter = new threading::formatter::JSON(this, threading::formatter::JSON::TS_EPOCH);
-
-    Info(Fmt("Sending JSON to TCP %s:%d%s", host.c_str(), tcpport, tls ? " (with TLS)" : ""));
 
     // get address info
     struct addrinfo * addr;
@@ -77,7 +56,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
 
     ret = getaddrinfo(host.c_str(), std::to_string(tcpport).c_str(), &hints, &addr);
     if (ret > 0) {
-        Error(Fmt("Error resolving %s", host.c_str()));
+        Error(Fmt("Error resolving %s: %s", host.c_str(), strerror(errno)));
 
         // clean up
         freeaddrinfo(addr);
@@ -86,7 +65,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
 
     sock = socket(addr->ai_family, addr->ai_socktype, addr->ai_protocol);
     if (sock < 0) {
-        Error(Fmt("Error opening socket"));
+        Error(Fmt("Error opening socket: %s", strerror(errno)));
 
         // clean up
         freeaddrinfo(addr);
@@ -94,15 +73,18 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
     }
 
     ret = connect(sock, addr->ai_addr, addr->ai_addrlen);
-    if (ret > 0) {
-        char addrstr[INET6_ADDRSTRLEN];
-        inet_ntop(addr->ai_family, addr->ai_addr->sa_family == AF_INET ? &(((struct sockaddr_in *)addr->ai_addr)->sin_addr) : (struct in_addr *)&(((struct sockaddr_in6 *)addr->ai_addr)->sin6_addr), addrstr, sizeof(addrstr));
-        Error(Fmt("Error connecting to %s", addrstr));
+    if (ret < 0) {
+        if (!retry) {
+            char addrstr[INET6_ADDRSTRLEN];
+            inet_ntop(addr->ai_family, addr->ai_addr->sa_family == AF_INET ? &(((struct sockaddr_in *)addr->ai_addr)->sin_addr) : (struct in_addr *)&(((struct sockaddr_in6 *)addr->ai_addr)->sin6_addr), addrstr, sizeof(addrstr));
+            Error(Fmt("Error connecting to %s: %s", addrstr, strerror(errno)));
+        }
 
-        // clean up
+        // clean up and return success if retrying
         freeaddrinfo(addr);
         close(sock);
-        return false;
+        sock = -1;
+        return retry;
     }
 
     // clean up
@@ -116,6 +98,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
 
             // clean up
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -128,6 +111,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
                 // clean up
                 SSL_CTX_free(ctx);
                 close(sock);
+                sock = -1;
                 return false;
             }
         }
@@ -140,6 +124,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
             // clean up
             SSL_CTX_free(ctx);
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -152,6 +137,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
             SSL_free(ssl);
             SSL_CTX_free(ctx);
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -164,6 +150,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
             SSL_free(ssl);
             SSL_CTX_free(ctx);
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -176,6 +163,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
             SSL_free(ssl);
             SSL_CTX_free(ctx);
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -189,6 +177,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
             SSL_free(ssl);
             SSL_CTX_free(ctx);
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -203,6 +192,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
             SSL_free(ssl);
             SSL_CTX_free(ctx);
             close(sock);
+            sock = -1;
             return false;
         }
 
@@ -213,7 +203,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
     return true;
 }
 
-bool TCP::DoFinish(double network_time) {
+bool TCP::DoUnload() {
     if (tls) {
         // stop tls
         SSL_shutdown(ssl);
@@ -225,15 +215,60 @@ bool TCP::DoFinish(double network_time) {
 
     // close socket
     close(sock);
-
-    // free json formatter
-    delete formatter;
+    sock = -1;
 
     return true;
 }
 
+bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field * const * fields) {
+    // get configuration value
+    string cfg_host = GetConfigValue(info, "host");
+    string cfg_tcpport = GetConfigValue(info, "tcpport");
+    string cfg_retry = GetConfigValue(info, "retry");
+    string cfg_tls = GetConfigValue(info, "tls");
+    string cfg_cert = GetConfigValue(info, "cert");
+
+    // fill in non-empty values
+    if (!cfg_host.empty())
+        host = cfg_host;
+    if (!cfg_tcpport.empty())
+        tcpport = stoi(cfg_tcpport);
+    if (!cfg_retry.empty())
+        retry = cfg_retry == "T";
+    if (!cfg_tls.empty())
+        tls = cfg_tls == "T";
+    if (!cfg_cert.empty())
+        cert = cfg_cert;
+
+    // prepare json formatter
+    formatter = new threading::formatter::JSON(this, threading::formatter::JSON::TS_EPOCH);
+
+    Info(Fmt("Sending JSON to TCP %s:%d%s", host.c_str(), tcpport, tls ? " (with TLS)" : ""));
+
+    return DoLoad();
+}
+
+bool TCP::DoFinish(double network_time) {
+    // free json formatter
+    delete formatter;
+
+    return DoUnload();
+}
+
 bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threading::Value ** vals) {
     int ret;
+
+    if (sock < 0) {
+        if (retry) {
+            DoLoad(false);
+
+            if (sock < 0)
+                return true;
+        }
+        else {
+            return false;
+        }
+    }
 
     buffer.Clear();
 
@@ -247,15 +282,27 @@ bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threa
     if (tls) {
         ret = SSL_write(ssl, msg, len);
         if (ret < 0) {
-            Error(Fmt("Error sending over TLS socket: %s", ERR_reason_error_string(ERR_get_error())));
-            return false;
+            if (retry) {
+                DoUnload();
+                DoLoad(false);
+            }
+            else {
+                Error(Fmt("Error sending TLS data: %s", ERR_reason_error_string(ERR_get_error())));
+                return false;
+            }
         }
     }
     else {
         ret = send(sock, msg, len, 0);
         if (ret < 0) {
-            Error(Fmt("Error sending over socket: %s", strerror(errno)));
-            return false;
+            if (retry) {
+                DoUnload();
+                DoLoad(false);
+            }
+            else {
+                Error(Fmt("Error sending data: %s", strerror(errno)));
+                return false;
+            }
         }
     }
 
