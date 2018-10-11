@@ -1,0 +1,10 @@
+[package]
+description = TCP log writer.
+tags = bro plugin, log writer, tcp, json
+build_command = ./configure --bro-dist=%(bro_dist)s --with-openssl=%(OPENSSL_PREFIX)s && make
+user_vars =
+  OPENSSL_PREFIX [/usr] "OpenSSL install prefix"
+script_dir = scripts/Writer/TCP
+test_command = make test
+external_depends =
+  openssl >=1.0.2p

@@ -1,0 +1,6 @@
+Writer::TCP - TCP log writer (dynamic, version 0.1)
+    [Writer] TCP (Log::WRITER_TCP)
+    [Constant] LogTCP::host
+    [Constant] LogTCP::tcpport
+    [Constant] LogTCP::ssl
+

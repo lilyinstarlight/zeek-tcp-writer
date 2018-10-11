@@ -1,0 +1,7 @@
+# Options for the TCP writer.
+
+module LogTCP;
+
+const host: string;
+const tcpport: int;
+const ssl: bool;
