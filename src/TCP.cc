@@ -40,7 +40,7 @@ string TCP::GetConfigValue(const WriterInfo & info, const string name) const {
         return it->second;
 }
 
-bool TCP::DoLoad(bool initial) {
+bool TCP::DoLoad() {
     // error value
     int ret;
     long lret;
@@ -74,11 +74,12 @@ bool TCP::DoLoad(bool initial) {
 
     ret = connect(sock, addr->ai_addr, addr->ai_addrlen);
     if (ret < 0) {
-        if (!retry) {
-            char addrstr[INET6_ADDRSTRLEN];
-            inet_ntop(addr->ai_family, addr->ai_addr->sa_family == AF_INET ? &(((struct sockaddr_in *)addr->ai_addr)->sin_addr) : (struct in_addr *)&(((struct sockaddr_in6 *)addr->ai_addr)->sin6_addr), addrstr, sizeof(addrstr));
+        char addrstr[INET6_ADDRSTRLEN];
+        inet_ntop(addr->ai_family, addr->ai_addr->sa_family == AF_INET ? &(((struct sockaddr_in *)addr->ai_addr)->sin_addr) : (struct in_addr *)&(((struct sockaddr_in6 *)addr->ai_addr)->sin6_addr), addrstr, sizeof(addrstr));
+        if (retry)
+            Warning(Fmt("Error connecting to %s: %s", addrstr, strerror(errno)));
+        else
             Error(Fmt("Error connecting to %s: %s", addrstr, strerror(errno)));
-        }
 
         // clean up and return success if retrying
         freeaddrinfo(addr);
@@ -260,7 +261,7 @@ bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threa
 
     if (sock < 0) {
         if (retry) {
-            DoLoad(false);
+            DoLoad();
 
             if (sock < 0)
                 return true;
@@ -284,7 +285,7 @@ bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threa
         if (ret < 0) {
             if (retry) {
                 DoUnload();
-                DoLoad(false);
+                DoLoad();
             }
             else {
                 Error(Fmt("Error sending TLS data: %s", ERR_reason_error_string(ERR_get_error())));
@@ -297,7 +298,7 @@ bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threa
         if (ret < 0) {
             if (retry) {
                 DoUnload();
-                DoLoad(false);
+                DoLoad();
             }
             else {
                 Error(Fmt("Error sending data: %s", strerror(errno)));

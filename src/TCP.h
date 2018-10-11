@@ -39,7 +39,7 @@ protected:
     virtual bool DoHeartbeat(double network_time, double current_time);
 
 private:
-    bool DoLoad(bool initial = true);
+    bool DoLoad();
     bool DoUnload();
     string GetConfigValue(const WriterInfo & info, const string name) const;
 
