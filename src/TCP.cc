@@ -7,7 +7,7 @@
 using namespace logging;
 using namespace writer;
 
-TCP::TCP(WriterFrontend * frontend) : WriterBackend(frontend), host((const char *)BifConst::LogTCP::host->Bytes(), BifConst::LogTCP::host->Len()), tcpport(BifConst::LogTCP::tcpport), ssl(BifConst::LogTCP::ssl) {
+TCP::TCP(WriterFrontend * frontend) : WriterBackend(frontend), host((const char *)BifConst::LogTCP::host->Bytes(), BifConst::LogTCP::host->Len()), tcpport(BifConst::LogTCP::tcpport), tls(BifConst::LogTCP::tls) {
 }
 
 TCP::~TCP() {
@@ -24,18 +24,18 @@ string TCP::GetConfigValue(const WriterInfo & info, const string name) const {
 bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field * const * fields) {
     string cfg_host = GetConfigValue(info, "host");
     string cfg_tcpport = GetConfigValue(info, "tcpport");
-    string cfg_ssl = GetConfigValue(info, "ssl");
+    string cfg_tls = GetConfigValue(info, "tls");
 
     if (!cfg_host.empty())
         host = cfg_host;
     if (!cfg_tcpport.empty())
         tcpport = stoi(cfg_tcpport);
-    if (!cfg_ssl.empty())
-        ssl = cfg_ssl == "T";
+    if (!cfg_tls.empty())
+        tls = cfg_tls == "T";
 
     formatter = new threading::formatter::JSON(this, threading::formatter::JSON::TS_EPOCH);
 
-    Error(Fmt("%s %d %d", host.c_str(), tcpport, ssl));
+    Info(Fmt("%s %d %d", host.c_str(), tcpport, tls));
 
     return true;
 }

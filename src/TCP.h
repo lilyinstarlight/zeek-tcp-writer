@@ -43,7 +43,7 @@ private:
 
     string host;
     int tcpport;
-    bool ssl;
+    bool tls;
 };
 
 }

@@ -2,6 +2,6 @@
 
 module LogTCP;
 
-const host: string;
-const tcpport: int;
-const ssl: bool;
+const host : string;
+const tcpport : int;
+const tls : bool;

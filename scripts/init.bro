@@ -9,5 +9,5 @@ export {
 	## filter's "config" table.
 	const host : string = "" &redef;
 	const tcpport : int = 1337 &redef;
-	const ssl : bool = T &redef;
+	const tls : bool = T &redef;
 }

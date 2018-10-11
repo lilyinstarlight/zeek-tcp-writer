@@ -1,7 +1,8 @@
 Bro TCP Log Writer Plugin
 =========================
 
-A Bro log writer that sends logging output using TCP.
+A Bro log writer that sends logging output using TCP, optionally
+using TLS.
 
 Many thanks to the ncsa/bro-zeromq-writer which I used as a model
 for this plugin.
