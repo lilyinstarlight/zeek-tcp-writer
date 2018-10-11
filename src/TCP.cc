@@ -134,8 +134,8 @@ bool TCP::DoLoad(bool is_retry) {
 
         // set tls hostname
         ret = SSL_set_tlsext_host_name(ssl, host.c_str());
-        if (!ret) {
-            Error(Fmt("Error setting TLS descriptor: %s", ERR_reason_error_string(ERR_get_error())));
+        if (ret != 1) {
+            Error(Fmt("Error setting TLS descriptor: %s", ERR_reason_error_string(SSL_get_error(ssl, ret))));
 
             // clean up
             SSL_free(ssl);
@@ -147,8 +147,8 @@ bool TCP::DoLoad(bool is_retry) {
 
         // set underlying file descriptor
         ret = SSL_set_fd(ssl, sock);
-        if (!ret) {
-            Error(Fmt("Error setting TLS descriptor: %s", ERR_reason_error_string(ERR_get_error())));
+        if (ret != 1) {
+            Error(Fmt("Error setting TLS descriptor: %s", ERR_reason_error_string(SSL_get_error(ssl, ret))));
 
             // clean up
             SSL_free(ssl);
@@ -160,8 +160,8 @@ bool TCP::DoLoad(bool is_retry) {
 
         // do handshake
         ret = SSL_connect(ssl);
-        if (!ret) {
-            Error(Fmt("Error completing TLS handshake: %s", ERR_reason_error_string(ERR_get_error())));
+        if (ret != 1) {
+            Error(Fmt("Error completing TLS handshake: %s", ERR_reason_error_string(SSL_get_error(ssl, ret))));
 
             // clean up
             SSL_free(ssl);
@@ -174,7 +174,7 @@ bool TCP::DoLoad(bool is_retry) {
         // get peer certificate
         X509 * peer = SSL_get_peer_certificate(ssl);
         if (peer == nullptr) {
-            Error(Fmt("Error getting TLS certificate: %s", ERR_reason_error_string(ERR_get_error())));
+            Error(Fmt("Error getting TLS certificate"));
 
             // clean up
             SSL_shutdown(ssl);
@@ -188,7 +188,7 @@ bool TCP::DoLoad(bool is_retry) {
         // verify peer certificate
         lret = SSL_get_verify_result(ssl);
         if (lret != X509_V_OK) {
-            Error(Fmt("Error verifying TLS certificate: %s", ERR_reason_error_string(ERR_get_error())));
+            Error(Fmt("Error verifying TLS certificate: %s", X509_verify_cert_error_string(lret)));
 
             // clean up
             X509_free(peer);
@@ -247,7 +247,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
     // prepare json formatter
     formatter = new threading::formatter::JSON(this, threading::formatter::JSON::TS_EPOCH);
 
-    Info(Fmt("Sending JSON to TCP %s:%d%s", host.c_str(), tcpport, tls ? " (with TLS)" : ""));
+    Info(Fmt("Sending JSON to TCP %s:%d%s", host.c_str(), tcpport, tls ? " with TLS" : ""));
 
     return DoLoad();
 }
