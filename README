@@ -44,7 +44,7 @@ event bro_init() {
 ```
 
 
-### All Options
+### Global Options
 
 ```bro
 ## TCP connection details. Retry will cause the
