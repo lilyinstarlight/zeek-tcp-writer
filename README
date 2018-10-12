@@ -12,7 +12,7 @@ Usage
 -----
 
 ```sh
-$ bro-pkg install https://github.com/fkmclane/bro-tcp-writer
+$ bro-pkg install https://github.com/fkmclane/bro-tcp-writer.git
 ```
 
 
