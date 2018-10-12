@@ -14,18 +14,11 @@
 using namespace logging;
 using namespace writer;
 
-TCP::TCP(WriterFrontend * frontend) : WriterBackend(frontend), host((const char *)BifConst::LogTCP::host->Bytes(), BifConst::LogTCP::host->Len()), tcpport(BifConst::LogTCP::tcpport), retry(BifConst::LogTCP::retry), tls(BifConst::LogTCP::tls), cert((const char *)BifConst::LogTCP::cert->Bytes(), BifConst::LogTCP::cert->Len()) {
-    if (tls) {
-        // add tls
-        SSL_load_error_strings();
-        SSL_library_init();
-        OpenSSL_add_all_algorithms();
-    }
-}
+TCP::TCP(WriterFrontend * frontend) : WriterBackend(frontend), ssl_init(false), sock(-1), host((const char *)BifConst::LogTCP::host->Bytes(), BifConst::LogTCP::host->Len()), tcpport(BifConst::LogTCP::tcpport), retry(BifConst::LogTCP::retry), tls(BifConst::LogTCP::tls), cert((const char *)BifConst::LogTCP::cert->Bytes(), BifConst::LogTCP::cert->Len()), key((const char *)BifConst::LogTCP::key->Bytes(), BifConst::LogTCP::key->Len()) {}
 
 TCP::~TCP() {
-    if (tls) {
-        // free tls
+    if (ssl_init) {
+        // cleanup global tls
         ERR_free_strings();
         EVP_cleanup();
     }
@@ -95,6 +88,15 @@ bool TCP::DoLoad(bool is_retry) {
     freeaddrinfo(addr);
 
     if (tls) {
+        if (!ssl_init) {
+            // add tls
+            SSL_load_error_strings();
+            SSL_library_init();
+            OpenSSL_add_all_algorithms();
+
+            ssl_init = true;
+        }
+
         // create context for tls
         ctx = SSL_CTX_new(SSLv23_client_method());
         if (ctx == nullptr) {
@@ -204,6 +206,39 @@ bool TCP::DoLoad(bool is_retry) {
         X509_free(peer);
     }
 
+    if (!key.empty()) {
+        if (tls) {
+            // write key
+            ret = SSL_write(ssl, (key + "\n").c_str(), key.size() + 1);
+            if (ret < 0) {
+                Error(Fmt("Error sending TLS data: %s", ERR_reason_error_string(ERR_get_error())));
+
+                // clean up
+                SSL_shutdown(ssl);
+                SSL_free(ssl);
+                SSL_CTX_free(ctx);
+                close(sock);
+                sock = -1;
+                return false;
+            }
+        }
+        else {
+            // write key
+            ret = send(sock, key.c_str(), key.size(), 0);
+            if (ret < 0) {
+                Error(Fmt("Error sending data: %s", strerror(errno)));
+
+                // clean up
+                SSL_shutdown(ssl);
+                SSL_free(ssl);
+                SSL_CTX_free(ctx);
+                close(sock);
+                sock = -1;
+                return false;
+            }
+        }
+    }
+
     return true;
 }
 
@@ -231,6 +266,7 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
     string cfg_retry = GetConfigValue(info, "retry");
     string cfg_tls = GetConfigValue(info, "tls");
     string cfg_cert = GetConfigValue(info, "cert");
+    string cfg_key = GetConfigValue(info, "key");
 
     // fill in non-empty values
     if (!cfg_host.empty())
@@ -243,6 +279,8 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
         tls = cfg_tls == "T";
     if (!cfg_cert.empty())
         cert = cfg_cert;
+    if (!cfg_key.empty())
+        key = cfg_key;
 
     // prepare json formatter
     formatter = new threading::formatter::JSON(this, threading::formatter::JSON::TS_EPOCH);
@@ -253,10 +291,12 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
 }
 
 bool TCP::DoFinish(double network_time) {
+    int ret = DoUnload();
+
     // free json formatter
     delete formatter;
 
-    return DoUnload();
+    return ret;
 }
 
 bool TCP::DoWrite(int num_fields, const threading::Field * const * fields, threading::Value ** vals) {

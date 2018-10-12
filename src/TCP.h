@@ -43,6 +43,7 @@ private:
     bool DoUnload();
     string GetConfigValue(const WriterInfo & info, const string name) const;
 
+    bool ssl_init;
     int sock;
     SSL_CTX * ctx;
     SSL * ssl;
@@ -55,6 +56,7 @@ private:
     bool retry;
     bool tls;
     string cert;
+    string key;
 };
 
 }

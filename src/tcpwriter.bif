@@ -7,3 +7,4 @@ const tcpport: int;
 const retry: bool;
 const tls: bool;
 const cert: string;
+const key: string;

@@ -16,4 +16,5 @@ export {
 	const retry: bool = F &redef;
 	const tls: bool = F &redef;
 	const cert: string = "" &redef;
+	const key: string = "" &redef;
 }
