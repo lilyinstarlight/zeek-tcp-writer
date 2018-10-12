@@ -20,7 +20,7 @@ $ bro-pkg install https://github.com/fkmclane/bro-tcp-writer
 
 ```bro
 LogTCP::host = "127.0.0.1";
-LogTCP::port = 1337;
+LogTCP::tcpport = 1337;
 ```
 
 
@@ -36,7 +36,7 @@ event bro_init() {
 		$name = "remote-tcp",
 		$writer = Log::WRITER_TCP,
 		$interv = 0 sec,
-		$config = table(["host"] = "127.0.0.1", ["port"] = "1337", ["retry"] = "T")
+		$config = table(["host"] = "127.0.0.1", ["tcpport"] = "1337", ["retry"] = "T")
 	];
 
 	Log::add_filter(Notice::LOG, remote_filter);
