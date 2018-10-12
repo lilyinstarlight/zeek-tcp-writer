@@ -26,7 +26,9 @@ redef LogTCP::tcpport = 1337;
 
 ## Custom Filters
 
-Custom filters allow you to configure the TCP writer on a per-filter basis. Note that all configuration items must be strings and are converted to the appropriate type at runtime.
+Custom filters allow you to configure the TCP writer on a per-filter
+basis. Note that all configuration items must be strings and are
+converted to the appropriate type at runtime.
 
 ```bro
 @load Writer/TCP
