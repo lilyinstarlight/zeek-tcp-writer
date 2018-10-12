@@ -5,4 +5,5 @@ Writer::TCP - TCP log writer (dynamic, version 0.1)
     [Constant] LogTCP::retry
     [Constant] LogTCP::tls
     [Constant] LogTCP::cert
+    [Constant] LogTCP::key
 
