@@ -285,8 +285,6 @@ bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field
     // prepare json formatter
     formatter = new threading::formatter::JSON(this, threading::formatter::JSON::TS_EPOCH);
 
-    Info(Fmt("Sending JSON to TCP %s:%d%s", host.c_str(), tcpport, tls ? " with TLS" : ""));
-
     return DoLoad();
 }
 
