@@ -7,7 +7,8 @@ export {
 	## writer to not throw an error when a connection fails
 	## and simply keep retrying. TLS negotiates TLS with the
 	## TCP server. Cert is an optional path to a trusted CA
-	## or server certificate.
+	## or server certificate. Key is sent to the remote
+	## server every time a connection is made.
 	##
 	## This value can be overridden on a per-filter basis in a
 	## filter's "config" table.

@@ -6,3 +6,67 @@ using TLS.
 
 Many thanks to the ncsa/bro-zeromq-writer which I used as a model
 for this plugin.
+
+
+Usage
+-----
+
+```sh
+$ bro-pkg install https://github.com/fkmclane/bro-tcp-writer
+```
+
+
+### Basic Usage
+
+```bro
+LogTCP::host = "127.0.0.1";
+LogTCP::port = 1337;
+```
+
+
+## Custom Filters
+
+Custom filters allow you to configure the TCP writer on a per-filter basis. Note that all configuration items must be strings and are converted to the appropriate type at runtime.
+
+```bro
+@load Writer/TCP
+
+event bro_init() {
+	local remote_filter: Log::Filter = [
+		$name = "remote-tcp",
+		$writer = Log::WRITER_TCP,
+		$interv = 0 sec,
+		$config = table(["host"] = "127.0.0.1", ["port"] = "1337", ["retry"] = "T")
+	];
+
+	Log::add_filter(Notice::LOG, remote_filter);
+}
+```
+
+
+### All Options
+
+```bro
+## TCP connection details. Retry will cause the
+## writer to not throw an error when a connection fails
+## and simply keep retrying. TLS negotiates TLS with the
+## TCP server. Cert is an optional path to a trusted CA
+## or server certificate. Key is sent to the remote
+## server every time a connection is made.
+LogTCP::host = "127.0.0.1";
+LogTCP::tcpport = 1337;
+LogTCP::retry = F;
+LogTCP::tls = F;
+LogTCP::cert = "";
+LogTCP::key = "";
+
+## Optionally ignore any specified :bro:type:`Log::ID` from being sent to
+## TCP.
+LogTCP::excluded_log_ids = {Conn::LOG};
+
+## If you want to explicitly only send certain :bro:type:`Log::ID`
+## streams, add them to this set.  If the set remains empty, all will
+## be sent.  The :bro:id:`LogTCP::excluded_log_ids` option
+## will remain in effect as well.
+LogTCP::send_logs = {Notice::LOG};
+```
