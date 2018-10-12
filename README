@@ -19,8 +19,8 @@ $ bro-pkg install https://github.com/fkmclane/bro-tcp-writer
 ### Basic Usage
 
 ```bro
-LogTCP::host = "127.0.0.1";
-LogTCP::tcpport = 1337;
+redef LogTCP::host = "127.0.0.1";
+redef LogTCP::tcpport = 1337;
 ```
 
 
@@ -53,7 +53,7 @@ event bro_init() {
 ## TCP server. Cert is an optional path to a trusted CA
 ## or server certificate. Key is sent to the remote
 ## server every time a connection is made.
-LogTCP::host = "127.0.0.1";
+LogTCP::host = "";
 LogTCP::tcpport = 1337;
 LogTCP::retry = F;
 LogTCP::tls = F;
@@ -62,11 +62,11 @@ LogTCP::key = "";
 
 ## Optionally ignore any specified :bro:type:`Log::ID` from being sent to
 ## TCP.
-LogTCP::excluded_log_ids = {Conn::LOG};
+LogTCP::excluded_log_ids = {};
 
 ## If you want to explicitly only send certain :bro:type:`Log::ID`
 ## streams, add them to this set.  If the set remains empty, all will
 ## be sent.  The :bro:id:`LogTCP::excluded_log_ids` option
 ## will remain in effect as well.
-LogTCP::send_logs = {Notice::LOG};
+LogTCP::send_logs = {};
 ```
