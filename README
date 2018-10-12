@@ -55,20 +55,20 @@ event bro_init() {
 ## TCP server. Cert is an optional path to a trusted CA
 ## or server certificate. Key is sent to the remote
 ## server every time a connection is made.
-LogTCP::host = "";
-LogTCP::tcpport = 1337;
-LogTCP::retry = F;
-LogTCP::tls = F;
-LogTCP::cert = "";
-LogTCP::key = "";
+LogTCP::host: string = "" &redef;
+LogTCP::tcpport: int = 1337 &redef;
+LogTCP::retry: bool = F &redef;
+LogTCP::tls: bool = F &redef;
+LogTCP::cert: string = "" &redef;
+LogTCP::key: string = "" &redef;
 
 ## Optionally ignore any specified :bro:type:`Log::ID` from being sent to
 ## TCP.
-LogTCP::excluded_log_ids = {};
+LogTCP::excluded_log_ids: set[Log::ID] &redef;
 
 ## If you want to explicitly only send certain :bro:type:`Log::ID`
 ## streams, add them to this set.  If the set remains empty, all will
 ## be sent.  The :bro:id:`LogTCP::excluded_log_ids` option
 ## will remain in effect as well.
-LogTCP::send_logs = {};
+LogTCP::send_logs set[Log::ID] &redef;
 ```
