@@ -30,7 +30,7 @@ public:
     }
 
 protected:
-    virtual bool DoInit(const WriterBackend::WriterInfo& info, int num_fields, const threading::Field * const * fields);
+    virtual bool DoInit(const WriterBackend::WriterInfo & info, int num_fields, const threading::Field * const * fields);
     virtual bool DoWrite(int num_fields, const threading::Field * const * fields, threading::Value ** vals);
     virtual bool DoSetBuf(bool enabled);
     virtual bool DoRotate(const char * rotated_path, double open, double close, bool terminating);
