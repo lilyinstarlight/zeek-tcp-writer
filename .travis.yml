@@ -6,7 +6,7 @@ addons:
       - cmake
       - libpcap-dev
       - swig
-      - openssl-dev
+      - libssl-dev
 
 install:
   - git clone --recursive https://github.com/bro/bro.git "$HOME"/bro-src
