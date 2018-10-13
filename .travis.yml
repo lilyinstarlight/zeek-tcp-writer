@@ -1,0 +1,18 @@
+language: cpp
+
+addons:
+  apt:
+    packages:
+      - cmake
+      - libpcap-dev
+      - swig
+      - openssl-dev
+
+install:
+  - git clone --recursive https://github.com/bro/bro.git "$HOME"/bro-src
+  - pushd "$HOME"/bro-src && ./configure --prefix="$HOME"/bro && make && make install && popd
+  - pip install --user bro-pkg
+  - PATH="$HOME/.local/bin:$HOME/bro/bin:$PATH" bro-pkg autoconfig
+
+script:
+  - PATH="$HOME/.local/bin:$HOME/bro/bin:$PATH" bro-pkg test .

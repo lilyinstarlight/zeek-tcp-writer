@@ -1,6 +1,8 @@
 Zeek (Bro) TCP Log Writer Plugin
 ================================
 
+![Build Status](https://img.shields.io/travis/fkmclane/bro-tcp-writer.svg)
+
 A Zeek (Bro) log writer that sends logging output using TCP, optionally
 using TLS.
 
