@@ -14,7 +14,7 @@ plugin::Configuration Plugin::Configure() {
 	config.version.major = 0;
 	config.version.minor = 1;
 #if BRO_PLUGIN_API_VERSION >= 7
-	config.version.patch = 4;
+	config.version.patch = 5;
 #endif
 	return config;
 }
