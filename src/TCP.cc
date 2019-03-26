@@ -108,7 +108,20 @@ bool TCP::DoLoad(bool is_retry) {
             return false;
         }
 
-        if (!cert.empty()) {
+        if (cert.empty()) {
+            // load default paths in context
+            ret = SSL_CTX_set_default_verify_paths(ctx);
+            if (ret <= 0) {
+                Error(Fmt("Error loading default certificate paths: %s", ERR_reason_error_string(ERR_get_error())));
+
+                // clean up
+                SSL_CTX_free(ctx);
+                close(sock);
+                sock = -1;
+                return false;
+            }
+        }
+        else {
             // add certificate to context
             ret = SSL_CTX_load_verify_locations(ctx, cert.c_str(), NULL);
             if (ret <= 0) {
