@@ -3,18 +3,18 @@
 module LogTCP;
 
 export {
-    ## Optionally ignore any specified :bro:type:`Log::ID` from being sent to
+    ## Optionally ignore any specified :zeek:type:`Log::ID` from being sent to
     ## TCP.
     const excluded_log_ids: set[Log::ID] &redef;
 
-    ## If you want to explicitly only send certain :bro:type:`Log::ID`
+    ## If you want to explicitly only send certain :zeek:type:`Log::ID`
     ## streams, add them to this set.  If the set remains empty, all will
-    ## be sent.  The :bro:id:`LogTCP::excluded_log_ids` option
+    ## be sent.  The :zeek:id:`LogTCP::excluded_log_ids` option
     ## will remain in effect as well.
     const send_logs: set[Log::ID] &redef;
 }
 
-event bro_init() &priority=-5 {
+event zeek_init() &priority=-5 {
     if (host == "")
         return;
 

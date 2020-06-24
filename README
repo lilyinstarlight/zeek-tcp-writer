@@ -1,9 +1,9 @@
-Zeek (Bro) TCP Log Writer Plugin
+Zeek TCP Log Writer Plugin
 ================================
 
-[![Build Status](https://img.shields.io/travis/fkmclane/bro-tcp-writer.svg)](https://travis-ci.org/fkmclane/bro-tcp-writer)
+[![Build Status](https://img.shields.io/travis/fkmclane/zeek-tcp-writer.svg)](https://travis-ci.org/fkmclane/zeek-tcp-writer)
 
-A Zeek (Bro) log writer that sends logging output using TCP, optionally
+A Zeek log writer that sends logging output using TCP, optionally
 using TLS.
 
 Many thanks to the ncsa/bro-zeromq-writer which I used as a model
@@ -14,13 +14,13 @@ Usage
 -----
 
 ```sh
-$ bro-pkg install https://github.com/fkmclane/bro-tcp-writer.git
+$ zkg install https://github.com/fkmclane/zeek-tcp-writer.git
 ```
 
 
 ### Basic Usage
 
-```bro
+```zeek
 redef LogTCP::host = "127.0.0.1";
 redef LogTCP::tcpport = 1337;
 ```
@@ -32,10 +32,10 @@ Custom filters allow you to configure the TCP writer on a per-filter
 basis. Note that all configuration items must be strings and are
 converted to the appropriate type at runtime.
 
-```bro
+```zeek
 @load Writer/TCP
 
-event bro_init() {
+event zeek_init() {
 	local remote_filter: Log::Filter = [
 		$name = "remote-tcp",
 		$writer = Log::WRITER_TCP,
@@ -50,7 +50,7 @@ event bro_init() {
 
 ### Global Options
 
-```bro
+```zeek
 ## TCP connection details. Retry will cause the
 ## writer to not throw an error when a connection fails
 ## and simply keep retrying. TLS negotiates TLS with the
@@ -64,13 +64,13 @@ LogTCP::tls: bool = F &redef;
 LogTCP::cert: string = "" &redef;
 LogTCP::key: string = "" &redef;
 
-## Optionally ignore any specified :bro:type:`Log::ID` from being sent to
+## Optionally ignore any specified :zeek:type:`Log::ID` from being sent to
 ## TCP.
 LogTCP::excluded_log_ids: set[Log::ID] &redef;
 
-## If you want to explicitly only send certain :bro:type:`Log::ID`
+## If you want to explicitly only send certain :zeek:type:`Log::ID`
 ## streams, add them to this set.  If the set remains empty, all will
-## be sent.  The :bro:id:`LogTCP::excluded_log_ids` option
+## be sent.  The :zeek:id:`LogTCP::excluded_log_ids` option
 ## will remain in effect as well.
 LogTCP::send_logs set[Log::ID] &redef;
 ```

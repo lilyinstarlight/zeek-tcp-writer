@@ -1,5 +1,4 @@
-#ifndef BRO_PLUGIN_WRITER_TCP
-#define BRO_PLUGIN_WRITER_TCP
+#pragma once
 
 #include <plugin/Plugin.h>
 
@@ -16,5 +15,3 @@ extern Plugin plugin;
 
 }
 }
-
-#endif

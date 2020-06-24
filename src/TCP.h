@@ -2,8 +2,7 @@
 //
 // Log writer for writing to TCP
 
-#ifndef LOGGING_WRITER_TCP_H
-#define LOGGING_WRITER_TCP_H
+#pragma once
 
 #include <string>
 
@@ -13,6 +12,7 @@
 #include "logging/WriterBackend.h"
 #include "threading/formatters/JSON.h"
 #include "threading/formatters/Ascii.h"
+#include "Desc.h"
 
 #include "tcpwriter.bif.h"
 
@@ -61,5 +61,3 @@ private:
 
 }
 }
-
-#endif
