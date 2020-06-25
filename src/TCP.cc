@@ -25,11 +25,11 @@ TCP::~TCP() {
     }
 }
 
-string TCP::GetConfigValue(const WriterInfo & info, const string name) const {
+std::string TCP::GetConfigValue(const WriterInfo & info, const std::string name) const {
     // find config value and return it or an empty string
     map<const char *, const char *>::const_iterator it = info.config.find(name.c_str());
     if (it == info.config.end())
-        return string();
+        return std::string();
     else
         return it->second;
 }
@@ -275,12 +275,12 @@ bool TCP::DoUnload() {
 
 bool TCP::DoInit(const WriterInfo & info, int num_fields, const threading::Field * const * fields) {
     // get configuration value
-    string cfg_host = GetConfigValue(info, "host");
-    string cfg_tcpport = GetConfigValue(info, "tcpport");
-    string cfg_retry = GetConfigValue(info, "retry");
-    string cfg_tls = GetConfigValue(info, "tls");
-    string cfg_cert = GetConfigValue(info, "cert");
-    string cfg_key = GetConfigValue(info, "key");
+    std::string cfg_host = GetConfigValue(info, "host");
+    std::string cfg_tcpport = GetConfigValue(info, "tcpport");
+    std::string cfg_retry = GetConfigValue(info, "retry");
+    std::string cfg_tls = GetConfigValue(info, "tls");
+    std::string cfg_cert = GetConfigValue(info, "cert");
+    std::string cfg_key = GetConfigValue(info, "key");
 
     // fill in non-empty values
     if (!cfg_host.empty())
