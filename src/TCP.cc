@@ -27,7 +27,7 @@ TCP::~TCP() {
 
 std::string TCP::GetConfigValue(const WriterInfo & info, const std::string name) const {
     // find config value and return it or an empty string
-    map<const char *, const char *>::const_iterator it = info.config.find(name.c_str());
+    std::map<const char *, const char *>::const_iterator it = info.config.find(name.c_str());
     if (it == info.config.end())
         return std::string();
     else
