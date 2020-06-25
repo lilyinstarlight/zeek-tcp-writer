@@ -41,7 +41,7 @@ protected:
 private:
     bool DoLoad(bool is_retry = false);
     bool DoUnload();
-    string GetConfigValue(const WriterInfo & info, const string name) const;
+    std::string GetConfigValue(const WriterInfo & info, const std::string name) const;
 
     bool ssl_init;
     int sock;
@@ -51,12 +51,12 @@ private:
     threading::formatter::JSON * formatter;
     ODesc buffer;
 
-    string host;
+    std::string host;
     int tcpport;
     bool retry;
     bool tls;
-    string cert;
-    string key;
+    std::string cert;
+    std::string key;
 };
 
 }
