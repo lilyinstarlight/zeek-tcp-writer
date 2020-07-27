@@ -243,9 +243,6 @@ bool TCP::DoLoad(bool is_retry) {
                 Error(Fmt("Error sending data: %s", strerror(errno)));
 
                 // clean up
-                SSL_shutdown(ssl);
-                SSL_free(ssl);
-                SSL_CTX_free(ctx);
                 close(sock);
                 sock = -1;
                 return false;
