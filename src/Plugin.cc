@@ -13,6 +13,6 @@ plugin::Configuration Plugin::Configure() {
 	config.description = "TCP log writer";
 	config.version.major = 0;
 	config.version.minor = 2;
-	config.version.patch = 1;
+	config.version.patch = 2;
 	return config;
 }
